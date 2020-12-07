@@ -1,4 +1,4 @@
-package com.yacotaco;
+package com.yacotaco.ai_modules;
 
 /**
  * MCTS AI module
