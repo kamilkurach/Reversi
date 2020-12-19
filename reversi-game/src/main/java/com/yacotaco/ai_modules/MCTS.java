@@ -1,9 +1,9 @@
+/**
+ * ai_modules package provides different AI models.
+ */
 package com.yacotaco.ai_modules;
 
-/**
- * MCTS AI module
- */
-
+/** MCTS AI module. */
 public class MCTS {
     private Selection selection;
     private Expansion expansion;
@@ -17,16 +17,20 @@ public class MCTS {
         this.backpropagation = new Backpropagation();
     }
 
-    // Selection
+    /** Selection.
+     *
+     */
     public class Selection {
 
         public Selection() {
-            
+
         }
 
     }
 
-    // Expansion
+    /** Expansion.
+     *
+     */
     public class Expansion {
 
         public Expansion() {
@@ -35,7 +39,9 @@ public class MCTS {
 
     }
 
-    // Simulation
+    /** Simulation.
+     *
+     */
     public class Simulation {
 
         public Simulation() {
@@ -44,13 +50,15 @@ public class MCTS {
 
     }
 
-    // Backpropagation
+    /** Backpropagation.
+     *
+     */
     public class Backpropagation {
 
         public Backpropagation() {
 
         }
-        
+
     }
-    
+
 }
