@@ -1,6 +1,8 @@
 ## This is Reversi game project for GUI lectures (in JavaFX).
 
-<img src="reversi-game/src/main/resources/reversi.gif" alt="drawing" width="400"/>
+<p align="center">
+  <img src="reversi-game/src/main/resources/reversi.gif" alt="drawing" width="400"/>
+</p>
 
 [![build](https://github.com/yacotaco/Reversi/workflows/build/badge.svg)](https://github.com/yacotaco/Reversi/actions?query=workflow%3Abuild)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/yacotaco/Reversi.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/yacotaco/Reversi/context:java)
