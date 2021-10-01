@@ -25,3 +25,10 @@
   1. [] Monte Carlo tree search (v1.1)
   2. [] Alpha–beta pruning (v1.2)
   3. [] Reinforcement Learning (v1.3)
+
+### Monte Carlo tree search (v1.1)
+
+After reviewing code in Controller I think, that code could have been organized better. Class MCTS initialized in Controller takes
+variables like `board` `allValidMoves` and `playerTurn`. All those three, could have been stored within `Board` class and then 
+passed as an object to AI module. In current design, a part of information about state of game is stored in `Board` class and
+the other part in `Controller` class (finding all valid moves for player, player turn).
