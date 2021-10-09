@@ -19,6 +19,8 @@ public class Board {
     /**List of all valid moves for current player.
     * List of arrays with coordinates [row, col]. */
     private ArrayList<Integer[]> allValidMoves = new ArrayList<Integer[]>();
+    /** List of all opponent discs captured by player.*/
+    private ArrayList<Disc> flipedDiscsToMark = new ArrayList<Disc>();
 
     /**
      * Board constructor.
@@ -99,6 +101,21 @@ public class Board {
      */
     public ArrayList<Integer[]> getAllValidMoves() {
         return allValidMoves;
+    }
+
+    /**
+     * 
+     * @return Returns list of disk to mark.
+     */
+    public ArrayList<Disc> getFlipedDiscsToMark() {
+        return flipedDiscsToMark;
+    }
+    
+    /**
+     * Clear list of disks to flip.
+     */
+    public void clearFlipedDiscsToMark() {
+        flipedDiscsToMark.clear();
     }
 
     /**
@@ -507,6 +524,286 @@ public class Board {
             }
         }
     }
+
+    // ************** FLIP OPPONENT DISCS **************
+
+    /** Changes state of opponent disc captured by player.
+     *
+     * @param row row coordinates.
+     * @param col column coordinates.
+     * @param currentPlayer current player turn (0 - white, 1 - black).
+     */
+    public void flipHorizontalDiscs(final Integer row, final Integer col,
+        final Integer currentPlayer) {
+        int nextDiscState = -1;
+        int primaryDiscState = currentPlayer;
+        ArrayList<Disc> discsToFlip = new ArrayList<Disc>();
+
+        // add loop to check if placed move "close" opponent discs on right
+        for (int i = col + 1; i <= boardGrid.length - 1; i++) {
+            nextDiscState = this.getDiscFromBoard(row, i).getState();
+            if (nextDiscState != primaryDiscState) {
+                Disc opponentDisc = this.getDiscFromBoard(row, i);
+                discsToFlip.add(opponentDisc);
+            }
+
+            if (nextDiscState == -1) {
+                discsToFlip.clear();
+                break;
+            } else if (nextDiscState == primaryDiscState) {
+                for (Disc disc : discsToFlip) {
+                    this.getDiscFromBoard(disc.getRow(), disc.getCol())
+                        .setState(primaryDiscState);
+                    flipedDiscsToMark.add(disc);
+                }
+                break;
+            } else if (i + 1 > boardGrid.length - 1) {
+                discsToFlip.clear();
+                break;
+            }
+        }
+
+        // add loop to check if placed move "close" opponent discs on left
+        for (int i = col - 1; i >= 0; i--) {
+            nextDiscState = this.getDiscFromBoard(row, i).getState();
+            if (nextDiscState != primaryDiscState) {
+                Disc opponentDisc = this.getDiscFromBoard(row, i);
+                discsToFlip.add(opponentDisc);
+            }
+
+            if (nextDiscState == -1) {
+                discsToFlip.clear();
+                break;
+            } else if (nextDiscState == primaryDiscState) {
+                for (Disc disc : discsToFlip) {
+                    this.getDiscFromBoard(disc.getRow(), disc.getCol())
+                        .setState(primaryDiscState);
+                    flipedDiscsToMark.add(disc);
+                }
+                break;
+            } else if (i - 1 < 0) {
+                discsToFlip.clear();
+                break;
+            }
+        }
+    }
+
+    /** Changes state of opponent disc captured by player.
+     *
+     * @param row row coordinates.
+     * @param col column coordinates.
+     * @param currentPlayer current player turn (0 - white, 1 - black).
+     */
+    public void flipVerticalDiscs(final Integer row, final Integer col,
+        final Integer currentPlayer) {
+        int nextDiscState = -1;
+        int primaryDiscState = currentPlayer;
+        ArrayList<Disc> discsToFlip = new ArrayList<Disc>();
+
+        // add loop to check if placed move "close" opponent discs up
+        for (int i = row - 1; i >= 0; i--) {
+            nextDiscState = this.getDiscFromBoard(i, col).getState();
+            if (nextDiscState != primaryDiscState) {
+                Disc opponentDisc = this.getDiscFromBoard(i, col);
+                discsToFlip.add(opponentDisc);
+            }
+
+            if (nextDiscState == -1) {
+                discsToFlip.clear();
+                break;
+            } else if (nextDiscState == primaryDiscState) {
+                for (Disc disc : discsToFlip) {
+                    this.getDiscFromBoard(disc.getRow(), disc.getCol())
+                        .setState(primaryDiscState);
+                    flipedDiscsToMark.add(disc);
+                }
+                break;
+            } else if (i - 1 < 0) {
+                discsToFlip.clear();
+                break;
+            }
+        }
+
+        // add loop to check if placed move "close" opponent discs down
+        for (int i = row + 1; i <= boardGrid.length - 1; i++) {
+            nextDiscState = this.getDiscFromBoard(i, col).getState();
+            if (nextDiscState != primaryDiscState) {
+                Disc opponentDisc = this.getDiscFromBoard(i, col);
+                discsToFlip.add(opponentDisc);
+            }
+
+            if (nextDiscState == -1) {
+                discsToFlip.clear();
+                break;
+            } else if (nextDiscState == primaryDiscState) {
+                for (Disc disc : discsToFlip) {
+                    this.getDiscFromBoard(disc.getRow(), disc.getCol())
+                        .setState(primaryDiscState);
+                    flipedDiscsToMark.add(disc);
+                }
+                break;
+            } else if (i + 1 > boardGrid.length - 1) {
+                discsToFlip.clear();
+                break;
+            }
+        }
+    }
+
+    /** Changes state of opponent disc captured by player.
+     *
+     * @param rowValue row coordinates.
+     * @param colValue column coordinates.
+     * @param currentPlayer current player turn (0 - white, 1 - black).
+     */
+    public void flipDiagonalDiscs(final Integer rowValue,
+        final Integer colValue, final Integer currentPlayer) {
+        int row = rowValue;
+        int col = colValue;
+        int nextDiscState = -1;
+        int primaryDiscState = currentPlayer;
+        int tmpRow = row;
+        int tmpCol = col;
+        ArrayList<Disc> discsToFlip = new ArrayList<Disc>();
+
+        /** add loop to check if placed move "close"
+         *  opponent discs  (diagonal up right)
+         */
+        for (int i = row - 1; i >= 0; i--) {
+            col++;
+
+            if (col > boardGrid.length - 1) {
+                break;
+            }
+
+            nextDiscState = this.getDiscFromBoard(i, col).getState();
+            if (nextDiscState != primaryDiscState) {
+                Disc opponentDisc = this.getDiscFromBoard(i, col);
+                discsToFlip.add(opponentDisc);
+            }
+
+            if (nextDiscState == -1) {
+                discsToFlip.clear();
+                break;
+            } else if (nextDiscState == primaryDiscState) {
+                for (Disc disc : discsToFlip) {
+                    this.getDiscFromBoard(disc.getRow(), disc.getCol())
+                        .setState(primaryDiscState);
+                    flipedDiscsToMark.add(disc);
+                }
+                break;
+            } else if (i - 1 < 0 || col + 1 > boardGrid.length - 1) {
+                discsToFlip.clear();
+                break;
+            }
+        }
+
+        row = tmpRow;
+        col = tmpCol;
+
+        /** add loop to check if placed move "close"
+         * opponent discs (diagonal down left)
+         */
+        for (int i = row + 1; i < boardGrid.length; i++) {
+            col--;
+
+            if (col < 0) {
+                break;
+            }
+
+            nextDiscState = this.getDiscFromBoard(i, col).getState();
+            if (nextDiscState != primaryDiscState) {
+                Disc opponentDisc = this.getDiscFromBoard(i, col);
+                discsToFlip.add(opponentDisc);
+            }
+
+            if (nextDiscState == -1) {
+                discsToFlip.clear();
+                break;
+            } else if (nextDiscState == primaryDiscState) {
+                for (Disc disc : discsToFlip) {
+                    this.getDiscFromBoard(disc.getRow(), disc.getCol())
+                        .setState(primaryDiscState);
+                    flipedDiscsToMark.add(disc);
+                }
+                break;
+            } else if (i + 1 > boardGrid.length - 1 || col - 1 < 0) {
+                discsToFlip.clear();
+                break;
+            }
+        }
+
+        row = tmpRow;
+        col = tmpCol;
+
+        /** add loop to check if placed move "close"
+         *  opponent discs (diagonal up left)
+         */
+        for (int i = row - 1; i >= 0; i--) {
+            col--;
+
+            if (col < 0) {
+                break;
+            }
+
+            nextDiscState = this.getDiscFromBoard(i, col).getState();
+            if (nextDiscState != primaryDiscState) {
+                Disc opponentDisc = this.getDiscFromBoard(i, col);
+                discsToFlip.add(opponentDisc);
+            }
+
+            if (nextDiscState == -1) {
+                discsToFlip.clear();
+                break;
+            } else if (nextDiscState == primaryDiscState) {
+                for (Disc disc : discsToFlip) {
+                    this.getDiscFromBoard(disc.getRow(), disc.getCol())
+                        .setState(primaryDiscState);
+                    flipedDiscsToMark.add(disc);
+                }
+                break;
+            } else if (i - 1 < 0 || col - 1 < 0) {
+                discsToFlip.clear();
+                break;
+            }
+        }
+
+        row = tmpRow;
+        col = tmpCol;
+
+        /** add loop to check if placed move "close"
+         * opponent discs (diagonal down right)
+         */
+        for (int i = row + 1; i < boardGrid.length; i++) {
+            col++;
+
+            if (col > boardGrid.length - 1) {
+                break;
+            }
+
+            nextDiscState = this.getDiscFromBoard(i, col).getState();
+            if (nextDiscState != primaryDiscState) {
+                Disc opponentDisc = this.getDiscFromBoard(i, col);
+                discsToFlip.add(opponentDisc);
+            }
+
+            if (nextDiscState == -1) {
+                discsToFlip.clear();
+                break;
+            } else if (nextDiscState == primaryDiscState) {
+                for (Disc disc : discsToFlip) {
+                    this.getDiscFromBoard(disc.getRow(), disc.getCol())
+                        .setState(primaryDiscState);
+                    flipedDiscsToMark.add(disc);
+                }
+                break;
+            } else if (i + 1 > boardGrid.length - 1
+                 || col + 1 > boardGrid.length - 1) {
+                discsToFlip.clear();
+                break;
+            }
+        }
+    }
+
 
     /** Prints current state of the boardGrid to console. */
     public void printBoard() {
