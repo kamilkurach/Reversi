@@ -68,9 +68,6 @@ public class Controller {
     private final Boolean moveMarker = true;
     /** Flag for AI Player. */
     private Boolean aiPlayer;
-    /**List of all valid moves for current player.
-     * List of arrays with coordinates [row, col]. */
-    private ArrayList<Integer[]> allValidMoves = new ArrayList<Integer[]>();
     /** List of all opponent discs captured by player.*/
     private ArrayList<Disc> flipedDiscsToMark = new ArrayList<Disc>();
 
@@ -184,31 +181,12 @@ public class Controller {
         }
     }
 
-    /** Removes duplicated valid moves. */
-    private void removeDuplicatedValidMoves() {
-        for (int i = 0; i < allValidMoves.size(); i++) {
-            Integer[] iMove = allValidMoves.get(i);
-            int iRow = iMove[0];
-            int iCol = iMove[1];
-            for (int j = 0; j < allValidMoves.size(); j++) {
-                Integer[] jMove = allValidMoves.get(j);
-                int jRow = jMove[0];
-                int jCol = jMove[1];
-                if (i != j) {
-                    if (iRow == jRow && iCol == jCol) {
-                        allValidMoves.remove(j);
-                    }
-                }
-            }
-        }
-    }
-
     /** Generates random move for opponent. */
     private void randomMoveGenerator() {
         if (aiPlayer.equals(true) && playerTurn.equals(1)) {
-            int max = allValidMoves.size();
+            int max = board.getAllValidMoves().size();
             int random = (int) (Math.random() * max);
-            Integer[] move = allValidMoves.get(random);
+            Integer[] move = board.getAllValidMoves().get(random);
             runOnClick(move[0], move[1]);
         }
     }
@@ -276,7 +254,7 @@ public class Controller {
             }
 
             if (moveMarker.equals(true)) {
-                for (Integer[] move : allValidMoves) {
+                for (Integer[] move : board.getAllValidMoves()) {
                     int validMoveRow = move[0];
                     int validMoveCol = move[1];
                     if (row == validMoveRow && col == validMoveCol) {
@@ -297,7 +275,7 @@ public class Controller {
             setGameTimer();
         }
 
-        if (allValidMoves.isEmpty()) {
+        if (board.getAllValidMoves().isEmpty()) {
             addSummary(playerOne, playerTwo);
         }
 
@@ -435,14 +413,14 @@ public class Controller {
                     view.getTopBorderPane().getTimerViewWhite()
                         .removeHighlight();
                     changePlayerTurn();
-                    getValidMoves(playerTurn);
+                    board.getValidMoves(playerTurn);
                     updateBoardView();
 
                 } else if (playerTurn == 1) {
                     view.getTopBorderPane().getTimerViewBlack()
                         .removeHighlight();
                     changePlayerTurn();
-                    getValidMoves(playerTurn);
+                    board.getValidMoves(playerTurn);
                     updateBoardView();
                 }
             }
@@ -451,368 +429,15 @@ public class Controller {
         timeline.play();
     }
 
-    // ************** SEARCH AND VALIDATE MOVES **************
-
-    /** Gets all horizontal moves.
-     *
-     * @param disc Disc object.
-     * @return list of arrays with moves coordinates.
-     */
-    private ArrayList<Integer[]> getHorizontalMoves(final Disc disc) {
-        Integer discRow = disc.getRow();
-        Integer discCol = disc.getCol();
-        int colRight = discCol + 1;
-        int opponentDiscState = 0;
-        int nextDiscState = -1;
-        ArrayList<Integer[]> result = new ArrayList<Integer[]>();
-
-        if (disc.getState() == 0) {
-            opponentDiscState = 1;
-        } else if (disc.getState() == 1) {
-            opponentDiscState = 0;
-        }
-
-        // search right
-        if (colRight <= board.getBoardGrid().length - 1) {
-            nextDiscState = board.getDiscFromBoard(discRow, colRight)
-                .getState();
-        }
-
-        while (nextDiscState == opponentDiscState) {
-            colRight++;
-
-            if (colRight > board.getBoardGrid().length - 1) {
-                break;
-            }
-
-            nextDiscState = board.getDiscFromBoard(discRow, colRight)
-                .getState();
-
-            if (nextDiscState == -1) {
-                Integer[] move = new Integer[2];
-                move[0] = discRow;
-                move[1] = colRight;
-                result.add(move);
-                break;
-            }
-        }
-
-        // search left
-        int colLeft = discCol - 1;
-        int nextDiscStateLeft = -1;
-
-        if (colLeft >= 0) {
-            nextDiscStateLeft = board.getDiscFromBoard(discRow, colLeft)
-                .getState();
-        }
-
-        while (nextDiscStateLeft == opponentDiscState) {
-            colLeft--;
-
-            if (colLeft < 0) {
-                break;
-            }
-
-            nextDiscStateLeft = board.getDiscFromBoard(discRow, colLeft)
-                .getState();
-
-            if (nextDiscStateLeft == -1) {
-                Integer[] move = new Integer[2];
-                move[0] = discRow;
-                move[1] = colLeft;
-                result.add(move);
-                break;
-            }
-        }
-        return result;
-    }
-
-    /** Gets all vertical moves.
-     *
-     * @param disc Disc object.
-     * @return list of arrays with moves coordinates.
-     */
-    private ArrayList<Integer[]> getVerticalMoves(final Disc disc) {
-        Integer discRow = disc.getRow();
-        Integer discCol = disc.getCol();
-        int rowUp = discRow - 1;
-        int opponentDiscState = 0;
-        int nextDiscStateUp = -1;
-        ArrayList<Integer[]> result = new ArrayList<Integer[]>();
-
-        if (disc.getState() == 0) {
-            opponentDiscState = 1;
-        } else if (disc.getState() == 1) {
-            opponentDiscState = 0;
-        }
-
-        // search up
-        if (rowUp >= 0) {
-            nextDiscStateUp = board.getDiscFromBoard(rowUp, discCol).getState();
-        }
-
-        while (nextDiscStateUp == opponentDiscState) {
-            rowUp--;
-            if (rowUp < 0) {
-                break;
-            }
-
-            nextDiscStateUp = board.getDiscFromBoard(rowUp, discCol).getState();
-
-            if (nextDiscStateUp == -1) {
-                Integer[] move = new Integer[2];
-                move[0] = rowUp;
-                move[1] = discCol;
-                result.add(move);
-                break;
-            }
-        }
-
-        int rowDown = discRow + 1;
-        int nextDiscStateDown = -1;
-
-        // search down
-        if (rowDown <= board.getBoardGrid().length - 1) {
-            nextDiscStateDown = board.getDiscFromBoard(rowDown, discCol)
-                .getState();
-        }
-
-        while (nextDiscStateDown == opponentDiscState) {
-            rowDown++;
-            if (rowDown > board.getBoardGrid().length - 1) {
-                break;
-            }
-
-            nextDiscStateDown = board.getDiscFromBoard(rowDown, discCol)
-                .getState();
-
-            if (nextDiscStateDown == -1) {
-                Integer[] move = new Integer[2];
-                move[0] = rowDown;
-                move[1] = discCol;
-                result.add(move);
-                break;
-            }
-        }
-        return result;
-    }
-
-    /** Gets all diagonal moves.
-     *
-     * @param disc Disc object.
-     * @return list of arrays with moves coordinates.
-     */
-    private ArrayList<Integer[]> getDiagonalMoves(final Disc disc) {
-        ArrayList<Integer[]> result = new ArrayList<Integer[]>();
-        Integer row = disc.getRow();
-        Integer col = disc.getCol();
-        Integer discState = disc.getState();
-        int nextDiscState = -1;
-        int opponentDiscState = 0;
-        int prevDiscState = discState;
-
-        if (disc.getState() == 0) {
-            opponentDiscState = 1;
-        } else if (disc.getState() == 1) {
-            opponentDiscState = 0;
-        }
-
-        // diagonal up right
-        for (int i = row - 1; i >= 0; i--) {
-            col++;
-
-            if (col > board.getBoardGrid().length - 1) {
-                break;
-            }
-
-            nextDiscState = board.getDiscFromBoard(i, col).getState();
-
-            if (nextDiscState == discState) {
-                break;
-            }
-
-            if (nextDiscState == opponentDiscState) {
-                prevDiscState = opponentDiscState;
-                continue;
-            }
-
-            if (nextDiscState == -1 && prevDiscState != discState) {
-                Integer[] move = new Integer[2];
-                move[0] = i;
-                move[1] = col;
-                result.add(move);
-                break;
-            } else if (nextDiscState == -1 && prevDiscState == discState) {
-                break;
-            }
-        }
-
-        row = disc.getRow();
-        col = disc.getCol();
-        discState = disc.getState();
-        nextDiscState = -1;
-        opponentDiscState = 0;
-        prevDiscState = discState;
-
-        if (disc.getState() == 0) {
-            opponentDiscState = 1;
-        } else if (disc.getState() == 1) {
-            opponentDiscState = 0;
-        }
-
-        // diagonal down left
-        for (int i = row + 1; i < board.getBoardGrid().length; i++) {
-            col--;
-
-            if (col < 0) {
-                break;
-            }
-
-            nextDiscState = board.getDiscFromBoard(i, col).getState();
-
-            if (nextDiscState == discState) {
-                break;
-            }
-
-            if (nextDiscState == opponentDiscState) {
-                prevDiscState = opponentDiscState;
-                continue;
-            }
-
-            if (nextDiscState == -1 && prevDiscState != discState) {
-                Integer[] move = new Integer[2];
-                move[0] = i;
-                move[1] = col;
-                result.add(move);
-                break;
-            } else if (nextDiscState == -1 && prevDiscState == discState) {
-                break;
-            }
-        }
-
-        row = disc.getRow();
-        col = disc.getCol();
-        discState = disc.getState();
-        nextDiscState = -1;
-        opponentDiscState = 0;
-        prevDiscState = discState;
-
-        if (disc.getState() == 0) {
-            opponentDiscState = 1;
-        } else if (disc.getState() == 1) {
-            opponentDiscState = 0;
-        }
-
-        // diagonal up left
-        for (int i = col - 1; i >= 0; i--) {
-            row--;
-
-            if (row < 0) {
-                break;
-            }
-
-            nextDiscState = board.getDiscFromBoard(row, i).getState();
-
-            if (nextDiscState == discState) {
-                break;
-            }
-
-            if (nextDiscState == opponentDiscState) {
-                prevDiscState = opponentDiscState;
-                continue;
-            }
-
-            if (nextDiscState == -1 && prevDiscState != discState) {
-                Integer[] move = new Integer[2];
-                move[0] = row;
-                move[1] = i;
-                result.add(move);
-                break;
-            } else if (nextDiscState == -1 && prevDiscState == discState) {
-                break;
-            }
-        }
-
-        row = disc.getRow();
-        col = disc.getCol();
-        discState = disc.getState();
-        nextDiscState = -1;
-        opponentDiscState = 0;
-        prevDiscState = discState;
-
-        if (disc.getState() == 0) {
-            opponentDiscState = 1;
-        } else if (disc.getState() == 1) {
-            opponentDiscState = 0;
-        }
-
-        // diagonal down right
-        for (int i = col + 1; i < board.getBoardGrid().length; i++) {
-            row++;
-
-            if (row > board.getBoardGrid().length - 1) {
-                break;
-            }
-
-            nextDiscState = board.getDiscFromBoard(row, i).getState();
-
-            if (nextDiscState == discState) {
-                break;
-            }
-
-            if (nextDiscState == opponentDiscState) {
-                prevDiscState = opponentDiscState;
-                continue;
-            }
-
-            if (nextDiscState == -1 && prevDiscState != discState) {
-                Integer[] move = new Integer[2];
-                move[0] = row;
-                move[1] = i;
-                result.add(move);
-                break;
-            } else if (nextDiscState == -1 && prevDiscState == discState) {
-                break;
-            }
-        }
-        return result;
-    }
-
-    /** Collects all valid moves for current player.
-     *
-     * @param newPlayerTurn current player.
-     */
-    private void getValidMoves(final Integer newPlayerTurn) {
-        allValidMoves.clear();
-        // generate posible moves for player
-        ArrayList<Disc> list = board.getAllPlayerDiscs(newPlayerTurn);
-        for (Disc disc : list) {
-            ArrayList<Integer[]> hMoves = getHorizontalMoves(disc);
-            for (Integer[] move : hMoves) {
-                allValidMoves.add(move);
-            }
-
-            ArrayList<Integer[]> vMoves = getVerticalMoves(disc);
-            for (Integer[] move : vMoves) {
-                allValidMoves.add(move);
-            }
-
-            ArrayList<Integer[]> dMoves = getDiagonalMoves(disc);
-            for (Integer[] move : dMoves) {
-                allValidMoves.add(move);
-            }
-        }
-        removeDuplicatedValidMoves();
-    }
-
+    
     /** Switches player if there is no valid move. */
     private void switchOnNoValidMoves() {
         // switch player if there are no valid moves
-        if (allValidMoves.isEmpty()) {
+        if (board.getAllValidMoves().isEmpty()) {
             changePlayerTurn();
             updatePointsCounters();
             updatePlayerTurnIndicators();
-            getValidMoves(playerTurn);
+            board.getValidMoves(playerTurn);
         }
     }
 
@@ -824,7 +449,7 @@ public class Controller {
      */
     private boolean validatePlacedMove(final Integer row, final Integer col) {
         boolean result = false;
-        for (Integer[] move : allValidMoves) {
+        for (Integer[] move : board.getAllValidMoves()) {
             int validMoveRow = move[0];
             int validMoveCol = move[1];
             if (row == validMoveRow && col == validMoveCol) {
@@ -1138,7 +763,7 @@ public class Controller {
             // change player after update
             changePlayerTurn();
 
-            getValidMoves(playerTurn);
+            board.getValidMoves(playerTurn);
 
             updateBoardView();
         }
@@ -1212,7 +837,7 @@ public class Controller {
                 initPlayer();
                 setPlayerTurn(initPlayerTurn);
                 board.initBoard();
-                getValidMoves(playerTurn);
+                board.getValidMoves(playerTurn);
                 updateBoardView();
                 removeSummary();
                 aiPlayer = false;
@@ -1317,12 +942,12 @@ public class Controller {
                                 view.getTopBorderPane().getTimerViewBlack()
                                     .switchOffTimer();
                             }
-                            getValidMoves(playerTurn);
+                            board.getValidMoves(playerTurn);
                             updateBoardView();
                         } else {
                             timeline = new Timeline();
                             initPlayer();
-                            getValidMoves(playerTurn);
+                            board.getValidMoves(playerTurn);
                             updateBoardView();
                         }
                     } else {
