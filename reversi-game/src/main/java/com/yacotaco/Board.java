@@ -119,6 +119,19 @@ public class Board {
     }
 
     /**
+     * Flip all captured opponent discs.
+     * @param row row value.
+     * @param col column value.
+     * @param playerTurn current player turn (0 - white, 1 - black).
+     */
+    public void flipAllDiscs(final Integer row, final Integer col,
+     final Integer playerTurn) {
+        this.flipHorizontalDiscs(row, col, playerTurn);
+        this.flipVerticalDiscs(row, col, playerTurn);
+        this.flipDiagonalDiscs(row, col, playerTurn);
+    }
+
+    /**
      * Modifies state of disc.
      *
      * @param row       position in row.

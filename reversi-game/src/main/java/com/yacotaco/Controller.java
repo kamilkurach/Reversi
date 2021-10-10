@@ -471,9 +471,7 @@ public class Controller {
         // player can place disc only on empty square
         if (Boolean.TRUE.equals(validMove)) {
             board.modifyDiscState(row, col, playerTurn);
-            board.flipHorizontalDiscs(row, col, playerTurn);
-            board.flipVerticalDiscs(row, col, playerTurn);
-            board.flipDiagonalDiscs(row, col, playerTurn);
+            board.flipAllDiscs(row, col, playerTurn);
 
             if (isTimerOn.equals(true)) {
                 resetTimer();
